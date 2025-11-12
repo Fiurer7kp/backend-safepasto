@@ -8,7 +8,7 @@ COPY pom.xml .
 COPY src ./src
 
 # Install Maven and build the application
-RUN apt-get update && apt-get install -y maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 RUN mvn clean package -DskipTests
 
 # Final stage
