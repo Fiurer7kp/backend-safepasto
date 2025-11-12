@@ -1,5 +1,5 @@
 # Multi-stage build to optimize image size
-FROM eclipse-temurin:17-jdk-jammy as builder
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
@@ -7,12 +7,11 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Install Maven and build the application
-RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
-RUN mvn clean package -DskipTests
+# Build the application (Maven preinstalled)
+RUN mvn -B clean package -DskipTests
 
-# Final stage
-FROM eclipse-temurin:17-jdk-jammy
+# Final stage (runtime only)
+FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
