@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: safepasto-postgres
+    environment:
+      POSTGRES_DB: safepasto_db
+      POSTGRES_USER: safepasto_user
+      POSTGRES_PASSWORD: safepasto_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - safepasto-network
+
+  backend:
+    build: .
+    container_name: safepasto-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/safepasto_db
+      - SPRING_DATASOURCE_USERNAME=safepasto_user
+      - SPRING_DATASOURCE_PASSWORD=safepasto_pass
+    depends_on:
+      - postgres
+    networks:
+      - safepasto-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  safepasto-network:
+    driver: bridge
