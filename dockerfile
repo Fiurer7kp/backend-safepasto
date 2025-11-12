@@ -1,5 +1,5 @@
 # Multi-stage build to optimize image size
-FROM openjdk:17-jdk-slim as builder
+FROM eclipse-temurin:17-jdk-jammy as builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 RUN mvn clean package -DskipTests
 
 # Final stage
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /app
 
