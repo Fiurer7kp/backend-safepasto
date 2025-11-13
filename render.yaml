@@ -13,7 +13,7 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
       - key: FRONTEND_URL
-        value: https://tu-frontend-app.render.com
+        value: https://frontend-safepasto-vcbw.vercel.app
     healthCheckPath: /api/health
 
 databases:
