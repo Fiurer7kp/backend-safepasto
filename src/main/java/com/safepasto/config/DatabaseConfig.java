@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Profile;
 import javax.sql.DataSource;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 public class DatabaseConfig {
@@ -15,7 +17,11 @@ public class DatabaseConfig {
     @Bean
     @Profile("prod")
     public DataSource dataSource() throws URISyntaxException {
+        // Support both Render's DATABASE_URL and possible JDBC_DATABASE_URL
         String databaseUrl = System.getenv("DATABASE_URL");
+        if (databaseUrl == null || databaseUrl.isBlank()) {
+            databaseUrl = System.getenv("JDBC_DATABASE_URL");
+        }
 
         if (databaseUrl == null || databaseUrl.isBlank()) {
             throw new RuntimeException("DATABASE_URL no está configurada");
@@ -24,8 +30,15 @@ public class DatabaseConfig {
         URI dbUri = new URI(databaseUrl);
 
         String userInfo = dbUri.getUserInfo();
-        String username = userInfo != null && userInfo.contains(":") ? userInfo.split(":")[0] : userInfo;
-        String password = userInfo != null && userInfo.contains(":") ? userInfo.split(":")[1] : null;
+        String username = null;
+        String password = null;
+        if (userInfo != null) {
+            String[] parts = userInfo.split(":", 2); // split only on the first ':'
+            username = URLDecoder.decode(parts[0], StandardCharsets.UTF_8);
+            if (parts.length > 1) {
+                password = URLDecoder.decode(parts[1], StandardCharsets.UTF_8);
+            }
+        }
 
         int port = dbUri.getPort() == -1 ? 5432 : dbUri.getPort();
         String path = dbUri.getPath(); // includes leading '/' + db name
@@ -41,6 +54,15 @@ public class DatabaseConfig {
         if (query != null && !query.isBlank()) {
             jdbcUrl.append("?").append(query);
         }
+
+        // Basic startup diagnostics (will appear in logs)
+        System.out.println("[DatabaseConfig] Host: " + dbUri.getHost() + 
+                ", Port: " + port + 
+                ", DB: " + (path != null ? path.replaceFirst("/", "") : ""));
+        if (query != null && !query.isBlank()) {
+            System.out.println("[DatabaseConfig] Query params: " + query);
+        }
+        System.out.println("[DatabaseConfig] JDBC URL: " + jdbcUrl);
 
         return DataSourceBuilder.create()
                 .url(jdbcUrl.toString())
