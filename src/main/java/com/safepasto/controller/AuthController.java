@@ -24,13 +24,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        logger.info("AuthController.login - Received login request for email: {}", request.getEmail());
+        logger.info("AuthController.login - Received login request for username: {}", request.getUsername());
         try {
             AuthResponse response = authService.login(request);
-            logger.info("AuthController.login - Login successful for email: {}", request.getEmail());
+            logger.info("AuthController.login - Login successful for username: {}", request.getUsername());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("AuthController.login - Login failed for email: {}", request.getEmail(), e);
+            logger.error("AuthController.login - Login failed for username: {}", request.getUsername(), e);
             throw e;
         }
     }
