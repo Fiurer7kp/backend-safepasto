@@ -38,7 +38,7 @@ public class SecurityConfig {
       .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       .authorizeHttpRequests(auth -> auth
         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-        .requestMatchers("/api/auth/**", "/api/health", "/auth/**", "/health", "/h2-console/**", "/ws-alertas/**").permitAll()
+        .requestMatchers("/auth/**", "/health", "/h2-console/**", "/ws-alertas/**").permitAll()
         .anyRequest().authenticated()
       )
       .headers(headers -> headers.frameOptions(frame -> frame.disable()));
