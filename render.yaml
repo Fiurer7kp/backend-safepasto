@@ -14,6 +14,10 @@ services:
         value: prod
       - key: FRONTEND_URL
         value: https://frontend-safepasto-vcbw.vercel.app
+      - key: CORS_ALLOWED_ORIGIN_PATTERNS
+        value: https://*.vercel.app
+      - key: WS_ALLOWED_ORIGIN_PATTERNS
+        value: https://*.vercel.app
     healthCheckPath: /api/health
 
 databases:
