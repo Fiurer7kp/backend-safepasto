@@ -29,11 +29,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         
         String path = request.getRequestURI();
+        String method = request.getMethod();
+        String origin = request.getHeader("Origin");
+        
+        logger.info("JwtAuthenticationFilter - Method: {}, Path: {}, Origin: {}", method, path, origin);
         
         // Skip JWT processing for public endpoints (handle both with and without context-path)
         if (path.startsWith("/auth/") || path.startsWith("/api/auth/") || 
             path.equals("/health") || path.equals("/api/health") ||
             path.startsWith("/h2-console/") || path.startsWith("/ws-alertas/")) {
+            logger.info("JwtAuthenticationFilter - Skipping JWT processing for public endpoint: {}", path);
             filterChain.doFilter(request, response);
             return;
         }

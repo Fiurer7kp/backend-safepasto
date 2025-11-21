@@ -1,6 +1,8 @@
 package com.safepasto.config;
 
 import com.safepasto.security.JwtAuthenticationFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
 
+  private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
   @Autowired
   private JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -32,8 +36,11 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    logger.info("SecurityConfig - Configuring SecurityFilterChain");
     http
-      .cors(c -> {})
+      .cors(c -> {
+        logger.info("SecurityConfig - CORS enabled");
+      })
       .csrf(csrf -> csrf.disable())
       .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       .authorizeHttpRequests(auth -> auth
@@ -44,6 +51,7 @@ public class SecurityConfig {
       .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
     http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    logger.info("SecurityConfig - SecurityFilterChain configured with public endpoints: /auth/**, /health, /h2-console/**, /ws-alertas/**");
     return http.build();
   }
 }
