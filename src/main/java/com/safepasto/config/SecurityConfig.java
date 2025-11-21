@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 public class SecurityConfig {
@@ -43,15 +44,25 @@ public class SecurityConfig {
       })
       .csrf(csrf -> csrf.disable())
       .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-      .authorizeHttpRequests(auth -> auth
-        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-        .requestMatchers("/auth/**", "/health", "/h2-console/**", "/ws-alertas/**").permitAll()
-        .anyRequest().authenticated()
-      )
-      .headers(headers -> headers.frameOptions(frame -> frame.disable()));
+      .authorizeHttpRequests(auth -> {
+        auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+        auth.requestMatchers("/auth/**", "/health", "/h2-console/**", "/ws-alertas/**").permitAll();
+        auth.anyRequest().authenticated();
+        logger.info("SecurityConfig - Public endpoints configured: /auth/**, /health, /h2-console/**, /ws-alertas/**");
+      })
+      .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+      .exceptionHandling(ex -> {
+        ex.authenticationEntryPoint((request, response, authException) -> {
+          logger.error("SecurityConfig - Authentication failed for path: {}, method: {}, error: {}", 
+              request.getRequestURI(), request.getMethod(), authException.getMessage());
+          response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+          response.setContentType("application/json");
+          response.getWriter().write("{\"error\":\"Access denied\"}");
+        });
+      });
 
     http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-    logger.info("SecurityConfig - SecurityFilterChain configured with public endpoints: /auth/**, /health, /h2-console/**, /ws-alertas/**");
+    logger.info("SecurityConfig - SecurityFilterChain configured");
     return http.build();
   }
 }
